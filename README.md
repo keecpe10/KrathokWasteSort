@@ -35,29 +35,83 @@
 | ทีละขั้น | ไปหยิบกระป๋องที่จุดวางกระป๋อง · ไปวางกระป๋องที่ถังสี _ · ไปที่ทางแยก แถว _ คอลัมน์ _ |
 | ตรวจสอบ | สีกระป๋องใบที่ _ เป็น _ · เส้นทางไปได้ครบทุกที่ · แสดงแผนที่สนามบนจอ OLED |
 
-## ตัวอย่างโปรแกรมแข่ง
+## ตัวอย่างโปรแกรมแข่งจนจบภารกิจ
+
+วางในแท็บ **JavaScript** ของ MakeCode แล้วสลับไปแท็บ **Blocks** จะเห็นเป็นบล็อก
+ตำแหน่งสิ่งกีดขวางและลำดับสีในตัวอย่างใช้ตามภาพและตัวอย่างในกติกา วันแข่งให้แก้ตามที่กรรมการสุ่มได้
+
+### แบบที่ 1: บล็อกเดียวจบภารกิจ
 
 ```blocks
+// ===== 1) ตั้งค่าหุ่น (แก้ให้ตรงกับหุ่นของตัวเอง) =====
 KrathokKidsBit.oledInit(OLED_Address.Addr_0x3C, true)
+KrathokKidsBit.lineTuning(Kids_Band.All, 0.02, 0.02)
+KrathokKidsBit.lineReading(50, 120)
 KrathokKidsBit.setSensorCal([929, 1667, 1514, 1362, 1273, 969, 595, 558], [3724, 3833, 3829, 3830, 3814, 3782, 2312, 2450])
 KrathokKidsBit.armSetup(Kids_Servo.S0, 175, 5, Kids_Servo.S1, 90, 20)
+KrathokKidsBit.armDo(Kids_ArmAction.ArmUp)
+
+WasteSort.setSpeeds(40, 50)
+WasteSort.setPick(Waste_PickMode.Ultrasonic, 6)
+WasteSort.setDrop(0, 0.3, 0.5)
+
+// ===== 2) ตั้งค่าสนาม (แก้ตามที่กรรมการสุ่ม) =====
 WasteSort.setObstacle(Waste_Row.R1, Waste_Col.C4)
 WasteSort.setObstacle(Waste_Row.R2, Waste_Col.C3)
 WasteSort.setObstacle(Waste_Row.R3, Waste_Col.C5)
 WasteSort.setObstacle(Waste_Row.R4, Waste_Col.C2)
 WasteSort.setCanColors(Waste_Color.White, Waste_Color.Black, Waste_Color.White, Waste_Color.Black, Waste_Color.White, Waste_Color.Black, Waste_Color.Black, Waste_Color.White)
+
+// ===== 3) ตรวจแผนที่บนจอ แล้วรอกดปุ่ม A =====
 WasteSort.showMap()
 KrathokKidsBit.waitForButton(Kids_Button.A)
+
+// ===== 4) แข่ง =====
 WasteSort.runMission()
 ```
 
+### แบบที่ 2: ทีละขั้น (ใช้สอนหรือแก้ทีละจุด)
+
+ส่วนตั้งค่าหุ่นและสนาม (ข้อ 1-2) เหมือนแบบที่ 1 เปลี่ยนเฉพาะส่วนแข่ง
+
+```typescript
+// ===== 3) ตรวจก่อนปล่อยหุ่น =====
+WasteSort.showMap()
+if (!(WasteSort.routesOk())) {
+    // ใส่ตำแหน่งสิ่งกีดขวางแล้วไม่มีทางไป ให้กลับไปตรวจตำแหน่งใหม่
+    basic.showIcon(IconNames.No)
+    music.play(music.builtinPlayableSoundEffect(soundExpression.sad), music.PlaybackMode.UntilDone)
+} else {
+    KrathokKidsBit.waitForButton(Kids_Button.A)
+
+    // ===== 4) ย้ายกระป๋องทีละใบ ครบ 8 ใบ =====
+    for (let ใบที่ = 1; ใบที่ <= 8; ใบที่++) {
+        basic.showNumber(ใบที่)
+        WasteSort.pickCan()
+        if (WasteSort.canIs(ใบที่, Waste_Color.Black)) {
+            WasteSort.dropCan(Waste_Color.Black)
+        } else {
+            WasteSort.dropCan(Waste_Color.White)
+        }
+    }
+
+    // ===== 5) กลับเข้ากรอบ START แล้วหยุดนิ่ง (ได้อีก 10 คะแนน) =====
+    WasteSort.parkAtStart()
+}
+```
+
+ใน `for` ใช้ `WasteSort.moveCan(ใบที่)` บรรทัดเดียวแทนก็ได้ ผลเหมือนกัน
+
 ## ขั้นตอนในวันแข่ง
 
-1. **สอนเซ็นเซอร์** ด้วยบล็อก "สอนเซ็นเซอร์" ของ KrathokKidsBit แล้วจดค่าไปใส่ "ตั้งค่าเซ็นเซอร์" (ใช้เซ็นเซอร์ช่อง 0-5 เป็นเส้นกลาง ช่อง 6-7 เป็นเซ็นเซอร์ทางแยก ตามค่ามาตรฐาน)
-2. **ตั้งค่าแขนกล** ให้มุมก้ามและแขนตรงกับหุ่นของตัวเอง
-3. ดูสนามจริง แล้วใส่ **ตำแหน่งสิ่งกีดขวาง 4 ชิ้น** และ **ลำดับสีกระป๋อง** ที่กรรมการสุ่ม
-4. กด **แสดงแผนที่สนามบนจอ OLED** ตรวจว่าตำแหน่งตรงกับสนามจริง มุมขวาล่างต้องขึ้น `OK` (ถ้าขึ้น `NO` แปลว่าไม่มีทางไป)
-5. วางหุ่นในกรอบ START **หันหน้าลงสนาม** (ไปทางจุดวางกระป๋อง) กดปุ่ม A
+1. **สอนเซ็นเซอร์บนสนามจริง** ด้วยบล็อก "สอนเซ็นเซอร์" ของ KrathokKidsBit แล้วนำค่าที่ได้มาแทนใน "ตั้งค่าเซ็นเซอร์" เพราะแสงในสนามจริงต่างจากตอนซ้อม (ใช้เซ็นเซอร์ช่อง 0-5 เป็นเส้นกลาง ช่อง 6-7 เป็นเซ็นเซอร์ทางแยก ตามค่ามาตรฐาน)
+2. **ทดลองแขนกล** ให้หนีบกระป๋องได้แน่นและยกพ้นพื้น ถ้าลากกระป๋องไปกับพื้นจะไม่ได้คะแนน
+3. ใส่ **ตำแหน่งสิ่งกีดขวาง 4 ชิ้น** และ **ลำดับสีกระป๋อง 8 ใบ** ตามที่กรรมการสุ่ม
+4. ดู **แผนที่สนามบนจอ OLED** ว่าตรงกับสนามจริง มุมขวาล่างต้องขึ้น `OK` (ถ้าขึ้น `NO` แปลว่าไม่มีทางไป)
+5. **ซ้อมทีละขั้นก่อน** เช่น สั่งแค่ "ไปหยิบกระป๋อง" กับ "ไปวางกระป๋องที่ถังสี" ใบเดียว แล้วปรับค่าตามหัวข้อการปรับจูนด้านล่าง
+6. วางหุ่นในกรอบ START **หันหน้าลงสนาม** (ไปทางจุดวางกระป๋อง) แล้วกดปุ่ม A เมื่อได้ยินสัญญาณเริ่ม
+
+ถ้ากด Retry ให้กดปุ่ม Reset บนหลัง micro:bit โปรแกรมจะเริ่มใหม่ตั้งแต่กระป๋องใบที่ 1 ตรงกับกติกาที่ Retry แล้วต้องเริ่มภารกิจใหม่หมด
 
 ## การปรับจูน
 
