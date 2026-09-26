@@ -237,7 +237,7 @@ namespace WasteSort {
 
     function runJunctions(n: number): void {
         // ชะลอเฉพาะแยกสุดท้ายของแต่ละช่วง หุ่นจึงวิ่งเร็วได้ระหว่างทางโดยไม่ไถเลยแยกที่จะจอดหรือเลี้ยว
-        if (n > 0) KrathokKidsBit.lineToJunction(Kids_Junction.Center, n, lineSpeed, Kids_Then.Stop, turnSpeed, lastSpeed)
+        if (n > 0) KrathokKidsBit.lineToJunctionStop(Kids_Junction.Center, n, lineSpeed, lastSpeed)
     }
 
     // พาหุ่นไปทางแยก (gr, gc) แล้วหันไปทิศ goalD (-1 = ทิศไหนก็ได้)
