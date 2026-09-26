@@ -98,6 +98,7 @@ namespace WasteSort {
     // ---------- ค่าของหุ่น ----------
     let lineSpeed = 40
     let turnSpeed = 50
+    let lastSpeed = 0      // ความเร็วช่วงเข้าทางแยกสุดท้ายของแต่ละช่วง (0 = ใช้ความเร็วเดิมตลอด)
     let pickMode = Waste_PickMode.Ultrasonic
     let pickValue = 6
     let binIn = 0
@@ -235,7 +236,8 @@ namespace WasteSort {
     }
 
     function runJunctions(n: number): void {
-        if (n > 0) KrathokKidsBit.lineToJunction(Kids_Junction.Center, n, lineSpeed, Kids_Then.Stop, turnSpeed)
+        // ชะลอเฉพาะแยกสุดท้ายของแต่ละช่วง หุ่นจึงวิ่งเร็วได้ระหว่างทางโดยไม่ไถเลยแยกที่จะจอดหรือเลี้ยว
+        if (n > 0) KrathokKidsBit.lineToJunction(Kids_Junction.Center, n, lineSpeed, Kids_Then.Stop, turnSpeed, lastSpeed)
     }
 
     // พาหุ่นไปทางแยก (gr, gc) แล้วหันไปทิศ goalD (-1 = ทิศไหนก็ได้)
@@ -444,17 +446,24 @@ namespace WasteSort {
 
     /**
      * ความเร็วที่ใช้ตลอดภารกิจ
+     * กด ⊕ ตั้งความเร็วครั้งสุดท้ายให้ช้ากว่าความเร็วเดินทาง หุ่นจะวิ่งเร็วระหว่างทาง
+     * แล้วชะลอก่อนถึงแยกที่จะจอดหรือเลี้ยว จอดตรงแยกได้แม่นโดยไม่เสียเวลาทั้งเส้นทาง
      * @param speed ความเร็วตอนเดินตามเส้น
      * @param turn ความเร็วตอนเลี้ยวที่ทางแยก
+     * @param last ความเร็วช่วงเข้าทางแยกสุดท้ายของแต่ละช่วง 0 = ใช้ความเร็วเดิมตลอด
      */
     //% group="ตั้งค่าหุ่น"
     //% weight=90
-    //% block="ความเร็วเดินตามเส้น $speed ความเร็วเลี้ยว $turn"
+    //% block="ความเร็วเดินตามเส้น $speed ความเร็วเลี้ยว $turn||ความเร็วครั้งสุดท้าย $last"
+    //% expandableArgumentMode="toggle"
     //% speed.min=10 speed.max=100 speed.defl=40
     //% turn.min=10 turn.max=100 turn.defl=50
-    export function setSpeeds(speed: number, turn: number): void {
+    //% last.min=0 last.max=100 last.defl=0
+    //% inlineInputMode=inline
+    export function setSpeeds(speed: number, turn: number, last: number = 0): void {
         lineSpeed = Math.max(10, Math.min(100, speed))
         turnSpeed = Math.max(10, Math.min(100, turn))
+        lastSpeed = Math.max(0, Math.min(100, last))
     }
 
     /**
