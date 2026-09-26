@@ -337,7 +337,8 @@ namespace WasteSort {
         if (pickMode == Waste_PickMode.Ultrasonic) KrathokKidsBit.lineToObstacle(pickValue, slow)
         else if (pickValue > 0) KrathokKidsBit.lineFollowFor(pickValue, slow)
         KrathokKidsBit.robotStop()
-        KrathokKidsBit.armDo(Kids_ArmAction.GripAndLift)
+        // ค่อยๆ หมุน กระป๋องในก้ามจะได้ไม่แกว่งหลุดมือตอนยก
+        KrathokKidsBit.armDo(Kids_ArmAction.GripAndLift, true)
         KrathokKidsBit.lineTurn(Kids_LeftRight.Left, turnSpeed)
         curD = N
         pending = true
@@ -350,7 +351,8 @@ namespace WasteSort {
         driveToEdge()                       // หยุดที่ขอบถัง
         if (binIn > 0) KrathokKidsBit.robotStraightFor(Kids_Direction.Forward, lineSpeed, binIn)
         KrathokKidsBit.robotStop()
-        KrathokKidsBit.armDo(Kids_ArmAction.PlaceAndRelease)
+        // ค่อยๆ หมุน กระป๋องจะได้ไม่กระแทกพื้นแล้วล้ม (กติกาหน้า 7 ข้อ 2 ล้มแล้วได้ 0 คะแนน)
+        KrathokKidsBit.armDo(Kids_ArmAction.PlaceAndRelease, true)
         // ถอยจนเซ็นเซอร์พ้นพื้นที่ถัง (ถังดำเป็นสีดำทั้งแผ่น) แล้วถอยต่ออีกตามที่ตั้ง
         let t0 = input.runningTime()
         KrathokKidsBit.robotWheels(-lineSpeed, -lineSpeed)
