@@ -103,6 +103,8 @@ namespace WasteSort {
     let binIn = 0
     let binBack = 0.3
     let parkIn = 0.5
+    let pickArmMs = 0      // เวลาต่อหนึ่งท่าของแขนกลตอนหยิบ (0 = ใช้ค่าจาก "ตั้งค่าแขนกล")
+    let dropArmMs = 0      // เวลาต่อหนึ่งท่าของแขนกลตอนวาง
 
     // ---------- ตำแหน่งหุ่น ----------
     let curR = 0
@@ -332,13 +334,13 @@ namespace WasteSort {
 
     function doPick(): boolean {
         if (!travel(ROWS - 1, MID, S)) return false
-        KrathokKidsBit.armDo(Kids_ArmAction.OpenGrip)
+        KrathokKidsBit.armDo(Kids_ArmAction.OpenGrip, false, pickArmMs)
         let slow = Math.min(lineSpeed, 30)
         if (pickMode == Waste_PickMode.Ultrasonic) KrathokKidsBit.lineToObstacle(pickValue, slow)
         else if (pickValue > 0) KrathokKidsBit.lineFollowFor(pickValue, slow)
         KrathokKidsBit.robotStop()
         // ค่อยๆ หมุน กระป๋องในก้ามจะได้ไม่แกว่งหลุดมือตอนยก
-        KrathokKidsBit.armDo(Kids_ArmAction.GripAndLift, true)
+        KrathokKidsBit.armDo(Kids_ArmAction.GripAndLift, true, pickArmMs)
         KrathokKidsBit.lineTurn(Kids_LeftRight.Left, turnSpeed)
         curD = N
         pending = true
@@ -352,7 +354,7 @@ namespace WasteSort {
         if (binIn > 0) KrathokKidsBit.robotStraightFor(Kids_Direction.Forward, lineSpeed, binIn)
         KrathokKidsBit.robotStop()
         // ค่อยๆ หมุน กระป๋องจะได้ไม่กระแทกพื้นแล้วล้ม (กติกาหน้า 7 ข้อ 2 ล้มแล้วได้ 0 คะแนน)
-        KrathokKidsBit.armDo(Kids_ArmAction.PlaceAndRelease, true)
+        KrathokKidsBit.armDo(Kids_ArmAction.PlaceAndRelease, true, dropArmMs)
         // ถอยจนเซ็นเซอร์พ้นพื้นที่ถัง (ถังดำเป็นสีดำทั้งแผ่น) แล้วถอยต่ออีกตามที่ตั้ง
         let t0 = input.runningTime()
         KrathokKidsBit.robotWheels(-lineSpeed, -lineSpeed)
@@ -467,6 +469,24 @@ namespace WasteSort {
     export function setPick(mode: Waste_PickMode, value: number): void {
         pickMode = mode
         pickValue = Math.max(0, value)
+    }
+
+    /**
+     * เวลาต่อหนึ่งท่าของแขนกล แยกตอนหยิบกับตอนวาง
+     * ตอนหยิบและตอนวางแขนจะค่อยๆ หมุน กระป๋องจึงไม่แกว่งหลุดมือหรือกระแทกพื้นแล้วล้ม
+     * ท่าไหนช้าเกินจำเป็นให้ลดเวลาลง จะได้ไม่เสียเวลาในสนาม
+     * @param pickMs เวลาต่อท่าตอนหยิบ 0 = ใช้ค่าจากบล็อก "ตั้งค่าแขนกล"
+     * @param dropMs เวลาต่อท่าตอนวาง 0 = ใช้ค่าจากบล็อก "ตั้งค่าแขนกล"
+     */
+    //% group="ตั้งค่าหุ่น"
+    //% weight=87
+    //% block="แขนกล ตอนหยิบท่าละ $pickMs ตอนวางท่าละ $dropMs มิลลิวินาที"
+    //% pickMs.shadow="timePicker" pickMs.defl=0
+    //% dropMs.shadow="timePicker" dropMs.defl=0
+    //% inlineInputMode=inline
+    export function setArmTiming(pickMs: number, dropMs: number): void {
+        pickArmMs = Math.max(0, pickMs)
+        dropArmMs = Math.max(0, dropMs)
     }
 
     /**
