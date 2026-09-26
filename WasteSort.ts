@@ -269,6 +269,9 @@ namespace WasteSort {
                 let to = b % 4
                 let left = bestTurnLeft(r, c, from, to)
                 let n = turnCalls(r, c, from, to, left)
+                // ให้ล้อขึ้นไปอยู่บนแยกก่อน หุ่นจะได้หมุนรอบจุดตัดของเส้น แล้วออกจากแยกตรงเส้น
+                // ใส่ครั้งเดียวก่อนหมุนครั้งแรก การหมุนครั้งต่อไปหมุนรอบจุดเดิมอยู่แล้ว
+                KrathokKidsBit.moveOntoJunction()
                 for (let k = 0; k < n; k++) {
                     KrathokKidsBit.lineTurn(left ? Kids_LeftRight.Left : Kids_LeftRight.Right, turnSpeed)
                 }
@@ -343,7 +346,7 @@ namespace WasteSort {
         KrathokKidsBit.robotStop()
         // ค่อยๆ หมุน กระป๋องในก้ามจะได้ไม่แกว่งหลุดมือตอนยก
         KrathokKidsBit.armDo(Kids_ArmAction.GripAndLift, true, pickArmMs)
-        KrathokKidsBit.lineTurn(Kids_LeftRight.Left, turnSpeed)
+        KrathokKidsBit.lineTurn(Kids_LeftRight.Left, turnSpeed)   // กลับหลังหันบนเส้นสั้น ไม่ใช่ที่แยก
         curD = N
         pending = true
         return true
@@ -478,6 +481,25 @@ namespace WasteSort {
     export function setPick(mode: Waste_PickMode, value: number): void {
         pickMode = mode
         pickValue = Math.max(0, value)
+    }
+
+    /**
+     * เวลาเดินต่อให้ล้อขึ้นไปอยู่บนทางแยกก่อนหมุนตัว
+     *
+     * แถบเซ็นเซอร์อยู่หน้าเพลาล้อ หุ่นจึงหยุดตอนล้อยังไม่ถึงเส้นขวาง
+     * ถ้าหมุนตอนนั้น หุ่นจะออกจากแยกไม่ตรงเส้น เห็นชัดที่แยกตัว T ที่ไม่มีเส้นตรงข้างหน้า
+     * ตั้งเวลาให้ล้อหยุดคร่อมเส้นขวางพอดี วัดครั้งเดียวใช้ได้ตลอด (เป็นค่าประจำหุ่น)
+     * @param ms เวลาเดินต่อ 0 = ไม่เดินต่อ (พฤติกรรมเดิม)
+     * @param speed ความเร็วตอนเดินต่อ
+     */
+    //% group="ตั้งค่าหุ่น"
+    //% weight=86
+    //% block="ก่อนเลี้ยว เดินต่อให้ล้ออยู่บนแยก $ms มิลลิวินาที ความเร็ว $speed"
+    //% ms.shadow="timePicker" ms.defl=0
+    //% speed.min=10 speed.max=100 speed.defl=40
+    //% inlineInputMode=inline
+    export function setMoveOntoJunction(ms: number, speed: number = 40): void {
+        KrathokKidsBit.setMoveOntoJunction(ms, speed)
     }
 
     /**
