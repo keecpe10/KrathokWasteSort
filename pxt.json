@@ -1,11 +1,11 @@
 {
     "name": "KrathokWasteSort",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "description": "บล็อกภาษาไทยสำหรับแข่งหุ่นยนต์อัตโนมัติ \"แยกขยะ\" รุ่นอายุไม่เกิน 12 ปี (ศรีสะเกษโรโบติกส์ 2026) ใช้กับหุ่น KidsBIT",
     "license": "MIT",
     "dependencies": {
         "core": "*",
-        "KrathokKidsBit": "github:keecpe10/KrathokKidsBit#v2.11.0"
+        "KrathokKidsBit": "github:keecpe10/KrathokKidsBit#v2.12.0"
     },
     "files": [
         "README.md",
